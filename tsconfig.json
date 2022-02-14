@@ -3,7 +3,11 @@
     "rootDir": "src",
     "outDir": "build",
     "esModuleInterop": true,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "lib": [
+      "ES2018",
+      "dom"
+    ]
   },
   "include": [
     "src/**/*.ts",
