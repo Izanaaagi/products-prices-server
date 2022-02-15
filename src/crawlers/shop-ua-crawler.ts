@@ -65,7 +65,11 @@ export class ShopUaCrawler
         category
       );
 
-      await this.parsedData.set(category.title, products);
+      await this.repository.writeJSON(
+        this.storeTitle,
+        category.title,
+        products
+      );
       await newPage.close();
     }
   }
@@ -116,7 +120,7 @@ export class ShopUaCrawler
   }
 
   private async getCategoryTitle(page: Page): Promise<Category> {
-    return await page.$eval('.category-page-heading', (titleElement) => ({
+    return await page.$eval('.bread-crumbs-link.last span', (titleElement) => ({
       title: titleElement.textContent,
     }));
   }

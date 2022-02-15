@@ -65,7 +65,11 @@ export class AtbCrawler
         category
       );
 
-      await this.parsedData.set(category.title, products);
+      await this.repository.writeJSON(
+        this.storeTitle,
+        category.title,
+        products
+      );
       await newPage.close();
     }
   }

@@ -77,7 +77,7 @@ export class ZakazUACrawler
   ): Promise<Array<string>> {
     const childrenCategories: Array<string> = [];
     const categoriesPage: Page = await browser.newPage();
-    await categoriesPage.goto(categoryLink);
+    await categoriesPage.goto(categoryLink, { waitUntil: 'domcontentloaded' });
     await categoriesPage.waitForSelector('.categories-box__list');
     const html = await categoriesPage.content();
 
@@ -117,7 +117,11 @@ export class ZakazUACrawler
         await categoryPage.close();
       }
 
-      this.parsedData.set(category.title, products);
+      await this.repository.writeJSON(
+        this.storeTitle,
+        category.title,
+        products
+      );
     }
   }
 

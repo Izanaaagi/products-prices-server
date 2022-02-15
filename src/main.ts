@@ -1,14 +1,11 @@
 import { ZakazUACrawler } from './crawlers/zakaz-ua-crawler';
 import { puppeteerOptions } from './puppeteer-options';
-import { FileStorage } from './repository/file-storage';
-import { Product } from './interfaces/product';
 import { StoreLanguage } from './enums/store-language';
 import { cpus } from 'os';
-import cluster from 'cluster';
+import cluster, { worker } from 'cluster';
 import { StoreCrawler } from './crawlers/store-crawler';
 import { AtbCrawler } from './crawlers/atb-crawler';
 import { ShopUaCrawler } from './crawlers/shop-ua-crawler';
-import { IStoreCrawler } from './interfaces/store-crawler';
 
 enum CrawlerType {
   SHOP_UA,
@@ -55,21 +52,11 @@ const supermarkets: Array<Supermarket> = [
     crawlerType: CrawlerType.SHOP_UA,
   },
   {
-    url: 'https://zakaz.atbmarket.com/',
+    url: 'https://zakaz.atbmarket.com',
     storeTitle: 'atb',
     crawlerType: CrawlerType.ATB,
   },
 ];
-
-const crawlerWorker = async <T extends StoreCrawler>(
-  crawler: T
-): Promise<void> => {
-  const fileStorage: FileStorage<Product> = new FileStorage<Product>();
-  await crawler.start();
-  for (const [key, value] of crawler.parsedData) {
-    await fileStorage.writeJSON(crawler.storeTitle, key, value);
-  }
-};
 
 const generateCrawlers = (
   supermarkets: Array<Supermarket>
@@ -108,28 +95,27 @@ const main = async (): Promise<void> => {
   if (cluster.isMaster) {
     const availableCpusCount = cpus().length - 1;
     const supermarketsCount = supermarkets.length;
+    let crawlerIndex = 0;
 
-    for (
-      let crawlerIndex = 0;
-      crawlerIndex < availableCpusCount;
-      crawlerIndex++
-    ) {
+    for (let i = 0; i < availableCpusCount; i++) {
       const worker = cluster.fork();
       worker.send(supermarkets[crawlerIndex]);
-      worker.on('exit', () => {
-        console.log('worker end tasks');
-        if (crawlerIndex < supermarketsCount) {
-          crawlerIndex++;
-          const worker = cluster.fork();
-          worker.send(supermarkets[crawlerIndex]);
-        }
-      });
+      crawlerIndex++;
     }
+
+    cluster.on('exit', (worker) => {
+      console.log(`worker ${worker.process.pid} died`);
+      if (crawlerIndex < supermarketsCount) {
+        const newWorker = cluster.fork();
+        newWorker.send(supermarkets[crawlerIndex]);
+        crawlerIndex++;
+      }
+    });
   } else {
-    console.log('worker start');
+    console.log(`worker ${process.pid} started`);
     process.on('message', async (supermarket: Supermarket): Promise<void> => {
       const crawler = crawlerGenerator(supermarket);
-      await crawlerWorker(crawler);
+      await crawler.start();
       process.kill(process.pid);
     });
   }
