@@ -1,62 +1,13 @@
 import { ZakazUACrawler } from './crawlers/zakaz-ua-crawler';
 import { puppeteerOptions } from './puppeteer-options';
-import { StoreLanguage } from './enums/store-language';
 import { cpus } from 'os';
-import cluster, { worker } from 'cluster';
+import cluster from 'cluster';
 import { StoreCrawler } from './crawlers/store-crawler';
 import { AtbCrawler } from './crawlers/atb-crawler';
 import { ShopUaCrawler } from './crawlers/shop-ua-crawler';
-
-enum CrawlerType {
-  SHOP_UA,
-  ATB,
-  ZAKAZ_UA,
-}
-
-interface Supermarket {
-  url: string;
-  storeTitle: string;
-  language?: StoreLanguage;
-  crawlerType: CrawlerType;
-}
-
-const supermarkets: Array<Supermarket> = [
-  {
-    url: 'https://eko.zakaz.ua',
-    storeTitle: 'eko',
-    crawlerType: CrawlerType.ZAKAZ_UA,
-  },
-  {
-    url: 'https://varus.zakaz.ua',
-    storeTitle: 'varus',
-    crawlerType: CrawlerType.ZAKAZ_UA,
-  },
-  {
-    url: 'https://novus.zakaz.ua',
-    storeTitle: 'novus',
-    crawlerType: CrawlerType.ZAKAZ_UA,
-  },
-  {
-    url: 'https://auchan.zakaz.ua',
-    storeTitle: 'auchan',
-    crawlerType: CrawlerType.ZAKAZ_UA,
-  },
-  {
-    url: 'https://shop.fora.ua',
-    storeTitle: 'fora',
-    crawlerType: CrawlerType.SHOP_UA,
-  },
-  {
-    url: 'https://shop.silpo.ua',
-    storeTitle: 'silpo',
-    crawlerType: CrawlerType.SHOP_UA,
-  },
-  {
-    url: 'https://zakaz.atbmarket.com',
-    storeTitle: 'atb',
-    crawlerType: CrawlerType.ATB,
-  },
-];
+import { Supermarket } from './interfaces/supermarket';
+import { CrawlerType } from './enums/crawler-type';
+import { supermarkets } from './supermarkets';
 
 const generateCrawlers = (
   supermarkets: Array<Supermarket>

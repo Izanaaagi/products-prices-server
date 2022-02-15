@@ -51,7 +51,10 @@ export class ShopUaCrawler
     for (let i = 0; i < categoryURLs.length; i++) {
       const store: Store = { title: this.storeTitle };
       const newPage = await browser.newPage();
-      await newPage.goto(categoryURLs[i], { waitUntil: 'networkidle2' });
+      await newPage.goto(categoryURLs[i], {
+        waitUntil: 'networkidle2',
+        timeout: 0,
+      });
       const category: Category = await this.getCategoryTitle(newPage);
 
       await newPage.waitForSelector('.product-list-item');

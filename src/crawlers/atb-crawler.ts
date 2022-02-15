@@ -40,14 +40,16 @@ export class AtbCrawler
     for (let i = 0; i < categoryURLs.length; i++) {
       const store: Store = { title: this.storeTitle };
       const newPage = await browser.newPage();
-      await newPage.goto(categoryURLs[i], { waitUntil: 'networkidle2' });
+      await newPage.goto(categoryURLs[i], {
+        waitUntil: 'domcontentloaded',
+        timeout: 0,
+      });
       const category: Category = await this.getCategoryTitle(
         newPage,
         '.page-title'
       );
 
       await this.confirmAge(newPage, '.custom-blue-btn.alcohol-modal__submit');
-      await newPage.waitForSelector('.catalog-list');
 
       let loadMore = await newPage.$('.product-pagination__more');
       while (loadMore) {
