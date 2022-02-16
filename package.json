@@ -7,13 +7,15 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:dev": "nodemon",
     "build": "rimraf ./build && tsc",
-    "start": "npm run build && node build/main.js"
+    "start:prod": "npm run build && node build/main.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/node-cron": "^3.0.1",
     "cheerio": "^1.0.0-rc.10",
+    "node-cron": "^3.0.0",
     "puppeteer": "^13.1.2"
   },
   "devDependencies": {

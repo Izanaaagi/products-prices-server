@@ -86,7 +86,7 @@ export class AtbCrawler
 
     $('.catalog-item.js-product-container').each((i, productItem) => {
       let price, discountPrice;
-      const title = $('.catalog-item__title a', productItem).text();
+      const title = $('.catalog-item__title a', productItem).text().trim();
       const weight = this.removeExcessSymbols(
         $('.product-price__unit', productItem).text()
       );

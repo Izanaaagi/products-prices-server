@@ -1,4 +1,4 @@
-import { PuppeteerOptions } from './interfaces/puppeteer-options';
+import { PuppeteerOptions } from '../interfaces/puppeteer-options';
 
 const args = ['--blink-settings=imagesEnabled=false'];
 

@@ -1,5 +1,5 @@
-import { Supermarket } from './interfaces/supermarket';
-import { CrawlerType } from './enums/crawler-type';
+import { Supermarket } from '../interfaces/supermarket';
+import { CrawlerType } from '../enums/crawler-type';
 
 export const supermarkets: Array<Supermarket> = [
   {
