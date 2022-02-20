@@ -13,7 +13,7 @@ services:
       - /app/node_modules
     ports:
       - ${PORT}:${PORT}
-    command: npm run start:dev
+    command: bash -c "npm run migrate:latest && npm run start:dev"
     depends_on:
       - postgres
     restart: always
@@ -29,7 +29,7 @@ services:
       - /app/node_modules
     ports:
       - ${PORT}:${PORT}
-    command: npm run start:prod
+    command: bash -c "npm run migrate:latest && npm run start:prod"
     depends_on:
       - postgres
     restart: always

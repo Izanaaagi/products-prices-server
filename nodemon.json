@@ -4,5 +4,8 @@
   ],
   "ext": ".ts,.js",
   "ignore": [],
-  "exec": "ts-node ./src/*.ts"
+  "exec": "ts-node ./src/*.ts",
+  "events": {
+    "start": "clear"
+  }
 }
