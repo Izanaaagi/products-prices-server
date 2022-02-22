@@ -49,13 +49,17 @@ export class ShopUaCrawler
     categoryURLs: Array<string>
   ): Promise<void> {
     for (let i = 0; i < categoryURLs.length; i++) {
-      const store: Store = { title: this.storeTitle };
+      const storeId: number = (await this.database.insertStore(this.storeTitle))
+        .id;
       const newPage = await browser.newPage();
       await newPage.goto(categoryURLs[i], {
         waitUntil: 'networkidle2',
         timeout: 0,
       });
       const category: Category = await this.getCategoryTitle(newPage);
+      const categoryId: number = (
+        await this.database.insertCategory(category.title)
+      ).id;
 
       await newPage.waitForSelector('.product-list-item');
       await this.lazyScrollBottom(newPage);
@@ -64,23 +68,20 @@ export class ShopUaCrawler
 
       const products: Array<Product> = await this.htmlToProducts(
         html,
-        store,
-        category
+        storeId,
+        categoryId
       );
 
-      await this.repository.writeJSON(
-        this.storeTitle,
-        category.title,
-        products
-      );
+      await this.database.insertProducts(products);
+
       await newPage.close();
     }
   }
 
   async htmlToProducts(
     html: string,
-    store: Store,
-    category: Category
+    storeId: number,
+    categoryId: number
   ): Promise<Array<Product>> {
     const products: Array<Product> = [];
 
@@ -114,8 +115,8 @@ export class ShopUaCrawler
         weight,
         price,
         discountPrice,
-        category,
-        store,
+        categoryId,
+        storeId,
       });
     });
 

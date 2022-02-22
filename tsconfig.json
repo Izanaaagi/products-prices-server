@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
-    "rootDir": "src",
     "outDir": "build",
     "esModuleInterop": true,
     "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true,
     "lib": [
-      "ES2018",
+      "ES2019",
       "dom"
     ],
     "allowJs": true

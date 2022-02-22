@@ -1,8 +1,9 @@
 import type { Knex } from 'knex';
+import { camelCase } from 'cheerio/lib/utils';
 
 // Update with your config settings.
 
-const config: { [key: string]: Knex.Config } = {
+export default {
   development: {
     client: 'postgresql',
     connection: {
@@ -20,6 +21,12 @@ const config: { [key: string]: Knex.Config } = {
       tableName: 'migrations',
       directory: __dirname + '/src/repository/migrations',
     },
+    debug: true,
+    postProcessResponse: (result) =>
+      Array.isArray(result)
+        ? result.map((row) => keysToCamelCase(row))
+        : keysToCamelCase(result),
+    wrapIdentifier: (value, origImpl) => origImpl(camelToSnakeCase(value)),
   },
 
   production: {
@@ -39,7 +46,19 @@ const config: { [key: string]: Knex.Config } = {
       tableName: 'migrations',
       directory: __dirname + '/src/repository/migrations',
     },
+    postProcessResponse: (result) =>
+      Array.isArray(result)
+        ? result.map((row) => keysToCamelCase(row))
+        : keysToCamelCase(result),
+    wrapIdentifier: (value, origImpl) => origImpl(camelToSnakeCase(value)),
   },
+} as { [key: string]: Knex.Config };
+
+const keysToCamelCase = <T extends object>(obj: T): T => {
+  const entries = Object.entries(obj);
+  const mappedEntries = entries.map(([key, value]) => [camelCase(key), value]);
+  return Object.fromEntries(mappedEntries);
 };
 
-module.exports = config;
+const camelToSnakeCase = (str: string): string =>
+  str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);

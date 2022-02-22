@@ -98,10 +98,11 @@ export class ZakazUACrawler
     browser: Browser,
     categoryURLs: Map<string, Array<string>>
   ): Promise<void> {
-    const store: Store = { title: this.storeTitle };
+    const storeId: number = (await this.database.insertStore(this.storeTitle))
+      .id;
 
     for (const [title, urls] of categoryURLs) {
-      const category: Category = { title };
+      const categoryId: number = (await this.database.insertCategory(title)).id;
       const products: Array<Product> = [];
 
       for (const url of urls) {
@@ -110,25 +111,21 @@ export class ZakazUACrawler
 
         const childCategoryProducts = await this.htmlToProducts(
           categoryPage,
-          category,
-          store
+          categoryId,
+          storeId
         );
         products.push(...childCategoryProducts);
         await categoryPage.close();
       }
 
-      await this.repository.writeJSON(
-        this.storeTitle,
-        category.title,
-        products
-      );
+      await this.database.insertProducts(products);
     }
   }
 
   async htmlToProducts(
     page: Page,
-    category: Category,
-    store: Store
+    categoryId: number,
+    storeId: number
   ): Promise<Array<Product>> {
     const products: Array<Product> = [];
 
@@ -139,8 +136,8 @@ export class ZakazUACrawler
     while (nextButton) {
       const thisPageProducts = await this.getPageProducts(
         page,
-        category,
-        store
+        categoryId,
+        storeId
       );
       products.push(...thisPageProducts);
       await nextButton.click();
@@ -158,8 +155,8 @@ export class ZakazUACrawler
 
   async getPageProducts(
     page: Page,
-    category: Category,
-    store: Store
+    categoryId: number,
+    storeId: number
   ): Promise<Array<Product>> {
     const products: Array<Product> = [];
     await page.waitForSelector('.ProductsBox__list');
@@ -188,8 +185,8 @@ export class ZakazUACrawler
         weight,
         price,
         discountPrice,
-        category,
-        store,
+        categoryId,
+        storeId,
       });
     });
 

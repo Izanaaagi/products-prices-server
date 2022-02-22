@@ -5,7 +5,7 @@ export async function up(knex: Knex): Promise<void> {
     table.increments();
     table.string('title');
     table.integer('price');
-    table.integer('discountPrice');
+    table.integer('discount_price');
     table.string('weight');
     table.integer('category_id').references('id').inTable('categories');
     table.integer('store_id').references('id').inTable('stores');

@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "nodemon",
+    "start:dev": "NODE_ENV=development && nodemon",
     "build": "rimraf ./build && tsc",
-    "start:prod": "npm run build && node build/main.js",
+    "start:prod": "NODE_ENV=production && npm run build && node build/src/main.js",
     "migrate:latest": "knex migrate:latest"
   },
   "keywords": [],
@@ -20,7 +20,6 @@
     "knex": "^1.0.3",
     "node-cron": "^3.0.0",
     "pg": "^8.7.3",
-    "pg-format": "^1.0.4",
     "puppeteer": "^13.1.2"
   },
   "devDependencies": {

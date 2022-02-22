@@ -3,18 +3,19 @@ import { Product } from '../interfaces/product';
 import { InitPuppeteerReturn } from '../interfaces/init-puppeteer';
 import { PuppeteerOptions } from '../interfaces/puppeteer-options';
 import { FileStorage } from '../repository/file-storage';
+import { Database } from '../repository/database';
 
 export class StoreCrawler {
   protected readonly url: string;
   private readonly options?: PuppeteerOptions;
-  protected readonly repository: FileStorage<Product>;
+  protected readonly database: Database;
   readonly storeTitle: string;
 
   constructor(url: string, storeTitle: string, options?: PuppeteerOptions) {
     this.url = url;
     this.storeTitle = storeTitle;
     this.options = options;
-    this.repository = new FileStorage<Product>();
+    this.database = new Database();
   }
 
   async start(): Promise<void> {

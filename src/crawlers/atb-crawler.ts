@@ -1,7 +1,6 @@
 import { StoreCrawler } from './store-crawler';
 import { Browser, Page } from 'puppeteer';
 import cheerio from 'cheerio';
-import { Store } from '../interfaces/store';
 import { Category } from '../interfaces/category';
 import { Product } from '../interfaces/product';
 import { Currency } from '../currency/currency';
@@ -38,7 +37,8 @@ export class AtbCrawler
     categoryURLs: Array<string>
   ): Promise<void> {
     for (let i = 0; i < categoryURLs.length; i++) {
-      const store: Store = { title: this.storeTitle };
+      const storeId: number = (await this.database.insertStore(this.storeTitle))
+        .id;
       const newPage = await browser.newPage();
       await newPage.goto(categoryURLs[i], {
         waitUntil: 'domcontentloaded',
@@ -48,6 +48,10 @@ export class AtbCrawler
         newPage,
         '.page-title'
       );
+
+      const categoryId: number = (
+        await this.database.insertCategory(category.title)
+      ).id;
 
       await this.confirmAge(newPage, '.custom-blue-btn.alcohol-modal__submit');
 
@@ -63,23 +67,20 @@ export class AtbCrawler
       const html = await newPage.content();
       const products: Array<Product> = await this.htmlToProducts(
         html,
-        store,
-        category
+        storeId,
+        categoryId
       );
 
-      await this.repository.writeJSON(
-        this.storeTitle,
-        category.title,
-        products
-      );
+      await this.database.insertProducts(products);
+
       await newPage.close();
     }
   }
 
   async htmlToProducts(
     html: string,
-    store: Store,
-    category: Category
+    storeId: number,
+    categoryId: number
   ): Promise<Array<Product>> {
     const products: Array<Product> = [];
     const $ = await cheerio.load(html);
@@ -108,8 +109,8 @@ export class AtbCrawler
         weight,
         price,
         discountPrice,
-        category,
-        store,
+        categoryId,
+        storeId,
       });
     });
 
