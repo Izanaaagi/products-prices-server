@@ -110,14 +110,16 @@ export class ShopUaCrawler
       }
       const price = Currency.toCoins(`${priceInteger}.${priceFraction}`);
 
-      products.push({
-        title,
-        weight,
-        price,
-        discountPrice,
-        categoryId,
-        storeId,
-      });
+      if (price > 0) {
+        products.push({
+          title,
+          weight,
+          price,
+          discountPrice,
+          categoryId,
+          storeId,
+        });
+      }
     });
 
     return products;

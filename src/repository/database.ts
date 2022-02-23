@@ -31,7 +31,10 @@ export class Database {
 
   async insertProducts(products: Array<Product>): Promise<void> {
     if (products.length !== 0) {
-      await this.pg('products').insert<Product>(products);
+      await this.pg('products')
+        .insert<Product>(products)
+        .onConflict(['title', 'store_id'])
+        .ignore();
     }
   }
 }

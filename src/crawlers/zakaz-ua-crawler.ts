@@ -180,14 +180,16 @@ export class ZakazUACrawler
       }
 
       price = Currency.toCoins(price);
-      products.push({
-        title,
-        weight,
-        price,
-        discountPrice,
-        categoryId,
-        storeId,
-      });
+      if (price > 0) {
+        products.push({
+          title,
+          weight,
+          price,
+          discountPrice,
+          categoryId,
+          storeId,
+        });
+      }
     });
 
     return products;

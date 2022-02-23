@@ -87,9 +87,11 @@ export class AtbCrawler
 
     $('.catalog-item.js-product-container').each((i, productItem) => {
       let price, discountPrice;
-      const title = $('.catalog-item__title a', productItem).text().trim();
+      const title = this.removeNBSP(
+        $('.catalog-item__title a', productItem).text()
+      );
       const weight = this.removeExcessSymbols(
-        $('.product-price__unit', productItem).text()
+        $('.product-price__unit', productItem).first().text()
       );
       const isDiscount = !!$('.product-price__bottom', productItem).text();
       if (isDiscount) {
@@ -104,14 +106,16 @@ export class AtbCrawler
           $('.product-price__top', productItem).attr('value')
         );
       }
-      products.push({
-        title,
-        weight,
-        price,
-        discountPrice,
-        categoryId,
-        storeId,
-      });
+      if (price > 0) {
+        products.push({
+          title,
+          weight,
+          price,
+          discountPrice,
+          categoryId,
+          storeId,
+        });
+      }
     });
 
     return products;
@@ -127,7 +131,11 @@ export class AtbCrawler
   }
 
   private removeExcessSymbols(weight: string): string {
-    const formattedWeight = weight.replace(/(\r\n|\n|\r|\s|\/)/gm, '');
+    const formattedWeight = weight.replace(/(\r\n|\n|\r|\s|\/|&nbsp;)/gm, '');
     return Array.from(new Set(formattedWeight)).join('');
+  }
+
+  private removeNBSP(title: string): string {
+    return title.trim().replace(/\xA0|&.*;/g, ' ');
   }
 }
