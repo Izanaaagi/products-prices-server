@@ -3,6 +3,7 @@ import { Category } from '../interfaces/category';
 import { knex, Knex } from 'knex';
 import config from '../../knexfile';
 import { Product } from '../interfaces/product';
+import Raw = Knex.Raw;
 
 export class Database {
   private pg: Knex;
@@ -36,5 +37,24 @@ export class Database {
         .onConflict(['title', 'store_id'])
         .ignore();
     }
+  }
+
+  async getAllStores(): Promise<Array<Store>> {
+    return this.pg.select().table<Store>('stores');
+  }
+
+  async findProducts(
+    storeId: number,
+    searchString: string
+  ): Promise<Array<Product>> {
+    const serializedSearchString = searchString.replace(/\s+/g, '&') + ':*';
+
+    const products: Array<Product> = (
+      await this.pg.raw(
+        'select * from products where store_id = ? and to_tsvector(title) @@ to_tsquery(?)',
+        [storeId, serializedSearchString]
+      )
+    ).rows;
+    return products;
   }
 }
