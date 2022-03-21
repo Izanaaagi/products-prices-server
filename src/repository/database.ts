@@ -3,7 +3,6 @@ import { Category } from '../interfaces/category';
 import { knex, Knex } from 'knex';
 import config from '../../knexfile';
 import { Product } from '../interfaces/product';
-import Raw = Knex.Raw;
 
 export class Database {
   private pg: Knex;
@@ -45,16 +44,27 @@ export class Database {
 
   async findProducts(
     storeId: number,
-    searchString: string
+    searchString: string,
+    page = 1,
+    size = 25
   ): Promise<Array<Product>> {
-    const serializedSearchString = searchString.replace(/\s+/g, '&') + ':*';
+    const serializedSearchString = searchString.replace(/\s+/g, ':*&') + ':*';
+
+    const limit = size;
+    const offset = (page - 1) * size;
 
     const products: Array<Product> = (
       await this.pg.raw(
-        'select * from products where store_id = ? and to_tsvector(title) @@ to_tsquery(?)',
-        [storeId, serializedSearchString]
+        `select products.*, stores.title "store_title"
+         from products
+                  left join stores on stores.id = products.store_id
+         where store_id = ?
+           and to_tsvector(products.title) @@ to_tsquery(?)
+         limit ? offset ?`,
+        [storeId, serializedSearchString, limit, offset]
       )
     ).rows;
+
     return products;
   }
 }
