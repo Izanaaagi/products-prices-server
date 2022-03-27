@@ -27,6 +27,7 @@ export class CrawlerCluster {
   }
 
   async startClusters(): Promise<void> {
+    console.log('Start crawling');
     if (cluster.isMaster) {
       while (this.supermarketIndex < this.availableCpusCount) {
         const worker = cluster.fork();
@@ -40,6 +41,8 @@ export class CrawlerCluster {
           const newWorker = cluster.fork();
           newWorker.send(this.supermarkets[this.supermarketIndex]);
           this.supermarketIndex++;
+        } else {
+          console.log('Crawling finished');
         }
       });
     } else {

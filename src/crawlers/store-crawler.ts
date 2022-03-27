@@ -1,8 +1,6 @@
 import puppeteer, { Browser, Page } from 'puppeteer';
-import { Product } from '../interfaces/product';
 import { InitPuppeteerReturn } from '../interfaces/init-puppeteer';
 import { PuppeteerOptions } from '../interfaces/puppeteer-options';
-import { FileStorage } from '../repository/file-storage';
 import { Database } from '../repository/database';
 
 export class StoreCrawler {
@@ -19,7 +17,7 @@ export class StoreCrawler {
   }
 
   async start(): Promise<void> {
-    const { page, browser } = await this.initPuppeteer(this.url);
+    const { browser } = await this.initPuppeteer(this.url);
     await browser.close();
   }
 

@@ -67,4 +67,9 @@ export class Database {
 
     return products;
   }
+
+  async clear(): Promise<void> {
+    await this.pg.raw(`truncate products, stores, categories cascade`);
+    console.log('database cleared');
+  }
 }

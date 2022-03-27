@@ -1,6 +1,5 @@
 import { StoreCrawler } from './store-crawler';
 import { Browser, Page } from 'puppeteer';
-import { Store } from '../interfaces/store';
 import { Category } from '../interfaces/category';
 import { Product } from '../interfaces/product';
 import cheerio from 'cheerio';
