@@ -1,46 +1,22 @@
-import { StoreCrawler } from './store-crawler';
 import { Browser, Page } from 'puppeteer';
-import { Category } from '../interfaces/category';
 import { Product } from '../interfaces/product';
 import cheerio from 'cheerio';
 import { Currency } from '../currency/currency';
 import { IStoreCrawler } from '../interfaces/store-crawler';
+import { ShopUaCrawler } from './shop-ua-crawler';
+import { Category } from '../interfaces/category';
 
-export class ShopUaCrawler
-  extends StoreCrawler
+export class ForaCrawler
+  extends ShopUaCrawler
   implements IStoreCrawler<Array<string>>
 {
   async start(): Promise<void> {
     const { page, browser } = await this.initPuppeteer(this.url);
+    await this.closeModal(page, '.modal-closeButton');
     await this.clickCategoriesDropdown(page, '.all-product_btn');
     const categoryLinks = await this.fetchCategoryLinks(page);
     await this.fetchProducts(browser, categoryLinks);
     await browser.close();
-  }
-
-  async fetchCategoryLinks(page: Page): Promise<Array<string>> {
-    const categoryLinks: Array<string> = [];
-    const categoriesCount: number = (await page.$$('.level_1 li')).length;
-
-    for (let i = 1; i <= categoriesCount; i++) {
-      const category = await page.$(`.level_1 > li:nth-child(${i})`);
-
-      if (category) {
-        await category.hover();
-        await page.waitForSelector('.active li.capital a');
-        let categoryLink = await page.$eval('.active li.capital a', (anchor) =>
-          anchor.getAttribute('href')
-        );
-
-        categoryLink = `${this.url}${categoryLink}?to=200&from=1`;
-        categoryLink && categoryLinks.push(categoryLink);
-
-        await page.evaluate(() => window.scrollBy(0, 30));
-      }
-    }
-
-    await page.close();
-    return categoryLinks;
   }
 
   async fetchProducts(
@@ -56,12 +32,17 @@ export class ShopUaCrawler
         timeout: 0,
       });
 
+      await this.closeModal(newPage, '.modal-closeButton');
+
+      await newPage.waitForSelector('.bread-crumbs-link.last span');
+
       const category: Category = await this.getCategoryTitle(newPage);
       const categoryId: number = (
         await this.database.insertCategory(category.title)
       ).id;
 
-      await newPage.waitForSelector('.product-list-item');
+      await newPage.waitForSelector('.product-title');
+      await newPage.waitForTimeout(1000);
       await this.lazyScrollBottom(newPage);
 
       const html = await newPage.content();
@@ -88,22 +69,29 @@ export class ShopUaCrawler
     const $ = await cheerio.load(html);
 
     $('.product-list-item').each((i, productItem) => {
-      let price, discountPrice;
+      let priceInteger,
+        priceFraction,
+        discountPrice,
+        discountPriceInteger,
+        discountPriceFraction;
 
       const title = $('.product-title', productItem).text();
       const weight = $('.product-weight', productItem).text();
 
-      const isDiscount = !!$('.old-integer', productItem).text();
-      if (isDiscount) {
-        price = Currency.toCoins(
-          $('.current-integer', productItem).text().replace('грн', '').trim()
+      if ($('.old-integer', productItem).text()) {
+        priceInteger = $('.old-integer', productItem).text();
+        priceFraction = $('.old-fraction', productItem).text();
+        discountPriceInteger = $('.current-integer', productItem).text();
+        discountPriceFraction = $('.current-fraction', productItem).text();
+        discountPrice = Currency.toCoins(
+          `${discountPriceInteger}.${discountPriceFraction}`
         );
-        discountPrice = Currency.toCoins($('.old-integer', productItem).text());
       } else {
-        price = Currency.toCoins(
-          $('.current-integer', productItem).text().replace('грн', '').trim()
-        );
+        priceInteger = $('.current-integer', productItem).text();
+        priceFraction = $('.current-fraction', productItem).text();
       }
+      const price = Currency.toCoins(`${priceInteger}.${priceFraction}`);
+
       if (price > 0) {
         products.push({
           title,
@@ -119,9 +107,8 @@ export class ShopUaCrawler
     return products;
   }
 
-  async getCategoryTitle(page: Page): Promise<Category> {
-    return await page.$eval('.bread-crumbs-link.last span', (titleElement) => ({
-      title: titleElement.textContent,
-    }));
+  async closeModal(page: Page, selector: string): Promise<void> {
+    const closeButton = await page.$(selector);
+    closeButton && (await closeButton.click());
   }
 }

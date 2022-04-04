@@ -36,9 +36,9 @@ export class AtbCrawler
     browser: Browser,
     categoryURLs: Array<string>
   ): Promise<void> {
+    const storeId: number = (await this.database.insertStore(this.storeTitle))
+      .id;
     for (let i = 0; i < categoryURLs.length; i++) {
-      const storeId: number = (await this.database.insertStore(this.storeTitle))
-        .id;
       const newPage = await browser.newPage();
       await newPage.goto(categoryURLs[i], {
         waitUntil: 'domcontentloaded',
@@ -53,7 +53,7 @@ export class AtbCrawler
         await this.database.insertCategory(category.title)
       ).id;
 
-      await this.confirmAge(newPage, '.custom-blue-btn.alcohol-modal__submit');
+      await this.closeModal(newPage, '.custom-blue-btn.alcohol-modal__submit');
 
       let loadMore = await newPage.$('.product-pagination__more');
       while (loadMore) {

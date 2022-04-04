@@ -1,8 +1,6 @@
 import type { Knex } from 'knex';
 import { camelCase } from 'cheerio/lib/utils';
 
-// Update with your config settings.
-
 export default {
   development: {
     client: 'postgresql',

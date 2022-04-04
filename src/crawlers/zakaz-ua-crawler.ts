@@ -1,8 +1,6 @@
 import { StoreCrawler } from './store-crawler';
 import { Browser, Page } from 'puppeteer';
 import cheerio from 'cheerio';
-import { Store } from '../interfaces/store';
-import { Category } from '../interfaces/category';
 import { Product } from '../interfaces/product';
 import { Currency } from '../currency/currency';
 import { StoreLanguage } from '../enums/store-language';
@@ -129,7 +127,7 @@ export class ZakazUACrawler
   ): Promise<Array<Product>> {
     const products: Array<Product> = [];
 
-    await this.confirmAge(page, 'button[data-marker="Yes"]');
+    await this.closeModal(page, 'button[data-marker="Yes"]');
 
     const nextButtonSelector = 'a[aria-label="Next page"]';
     let nextButton = await page.$(nextButtonSelector);

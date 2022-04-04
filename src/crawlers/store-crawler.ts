@@ -32,9 +32,9 @@ export class StoreCrawler {
     await page.$eval(selector, (button) => (button as HTMLLIElement).click());
   }
 
-  async confirmAge(page: Page, selector: string): Promise<void> {
-    const confirmButton = await page.$(selector);
-    confirmButton && (await confirmButton.click());
+  async closeModal(page: Page, selector: string): Promise<void> {
+    const closeButton = await page.$(selector);
+    closeButton && (await closeButton.click());
   }
 
   async lazyScrollBottom(page: Page): Promise<void> {

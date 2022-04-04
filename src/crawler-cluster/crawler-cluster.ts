@@ -7,6 +7,7 @@ import { ZakazUACrawler } from '../crawlers/zakaz-ua-crawler';
 import { ShopUaCrawler } from '../crawlers/shop-ua-crawler';
 import { AtbCrawler } from '../crawlers/atb-crawler';
 import { PuppeteerOptions } from '../interfaces/puppeteer-options';
+import { ForaCrawler } from '../crawlers/fora-crawler';
 
 export class CrawlerCluster {
   private readonly availableCpusCount: number;
@@ -71,6 +72,12 @@ export class CrawlerCluster {
         );
       case CrawlerType.ATB:
         return new AtbCrawler(
+          supermarket.url,
+          supermarket.storeTitle,
+          this.puppeteerOptions
+        );
+      case CrawlerType.FORA:
+        return new ForaCrawler(
           supermarket.url,
           supermarket.storeTitle,
           this.puppeteerOptions
